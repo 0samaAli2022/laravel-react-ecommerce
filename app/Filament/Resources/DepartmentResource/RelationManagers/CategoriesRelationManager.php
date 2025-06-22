@@ -3,10 +3,14 @@
 namespace App\Filament\Resources\DepartmentResource\RelationManagers;
 
 use App\Models\Category;
-use Filament\Forms;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class CategoriesRelationManager extends RelationManager
@@ -18,10 +22,10 @@ class CategoriesRelationManager extends RelationManager
         $department = $this->getOwnerRecord();
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
+                TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('parent_id')
+                Select::make('parent_id')
                     ->options(function () use ($department) {
                         return Category::query()
                             ->where('department_id', $department->id)
@@ -31,7 +35,7 @@ class CategoriesRelationManager extends RelationManager
                     ->label('Parent Category')
                     ->preload()
                     ->searchable(),
-                Forms\Components\Checkbox::make('active')
+                Checkbox::make('active')
             ]);
     }
 
@@ -40,13 +44,13 @@ class CategoriesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('parent.name')
+                TextColumn::make('parent.name')
                     ->sortable()
                     ->searchable(),
-                Tables\Columns\IconColumn::make('active')
+                IconColumn::make('active')
                     ->boolean()
             ])
             ->filters([
