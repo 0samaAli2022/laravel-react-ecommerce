@@ -39,6 +39,7 @@ class ProductVariationTypes extends EditRecord
                             ->options(ProductVariationTypeEnum::labels())
                             ->required(),
                         Repeater::make('options')
+                            ->itemLabel(fn($state) => $state['name'] ?? null)
                             ->relationship()
                             ->collapsible()
                             ->columnSpan(2)
