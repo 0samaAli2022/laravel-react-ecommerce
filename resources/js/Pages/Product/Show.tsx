@@ -1,5 +1,5 @@
 import { Product, VariationTypeOption } from '@/types';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Carousel from '@/Components/Core/Carousel';
@@ -19,7 +19,27 @@ function Show({ product, variationOptions }: { product: Product, variationOption
   });
 
   const { url } = usePage();
-  const [selectedOptions, setSelectedOptions] = useState<Record<number, VariationTypeOption>>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Record<number, VariationTypeOption>>({});
+
+  // Parse URL parameters for options
+  const urlParams = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    const options: Record<number, number> = {};
+
+    params.forEach((value, key) => {
+      const match = key.match(/options\[(\d+)\]/);
+      if (match) {
+        const typeId = parseInt(match[1]);
+        const optionId = parseInt(value);
+        if (!isNaN(typeId) && !isNaN(optionId)) {
+          options[typeId] = optionId;
+        }
+      }
+    });
+
+    return options;
+  }, [url]);
+
   const images = useMemo(() => {
     for (let typeId in selectedOptions) {
       const option = selectedOptions[typeId];
@@ -51,26 +71,25 @@ function Show({ product, variationOptions }: { product: Product, variationOption
   }, [product, selectedOptions]);
 
   useEffect(() => {
-    for (let type of product.variationTypes) {
-      // console.log(variationOptions)
-      const selectedOptionId: number = variationOptions[type.id];
-      console.log(selectedOptionId, type.options);
-      chooseOption(
-        type.id,
-        type.options.find(option =>
-          option.id === selectedOptionId) || type.options[0],
-        false
-      );
-    }
-  }, []);
+    // Use URL parameters if available, otherwise fall back to props
+    const optionsToUse = Object.keys(urlParams).length > 0 ? urlParams : variationOptions;
 
-  const getOptionIdsMap = (newOptions: object) => {
-    return Object.fromEntries(
-      Object.entries(newOptions)
-        .map(([a, b]) =>
-          [a, b.id]
-        ));
-  };
+    for (let type of product.variationTypes) {
+      const selectedOptionId = optionsToUse[type.id];
+      if (selectedOptionId) {
+        const option = type.options.find(opt => opt.id === selectedOptionId);
+        if (option) {
+          chooseOption(type.id, option, false);
+        } else if (type.options.length > 0) {
+          // If the option from URL doesn't exist, select the first available option
+          chooseOption(type.id, type.options[0], false);
+        }
+      } else if (type.options.length > 0) {
+        // If no option is selected for this type, select the first one
+        chooseOption(type.id, type.options[0], false);
+      }
+    }
+  }, [product.variationTypes, urlParams]);
 
   const chooseOption = (
     typeId: number,
@@ -84,15 +103,14 @@ function Show({ product, variationOptions }: { product: Product, variationOption
       };
 
       if (updateRouter) {
-        router.get(url,
-          {
-            options: getOptionIdsMap(newOptions)
-          },
-          {
-            preserveScroll: true,
-            preserveState: true
-          }
-        );
+        const params = new URLSearchParams();
+        Object.entries(newOptions).forEach(([tId, opt]) => {
+          params.set(`options[${tId}]`, opt.id.toString());
+        });
+
+        // Use pushState to update URL without page reload
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, '', newUrl);
       }
 
       return newOptions;
