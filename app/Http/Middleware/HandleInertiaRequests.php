@@ -2,6 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Resources\DepartmentResource;
+use App\Models\Department;
 use App\Services\CartService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -35,9 +37,13 @@ class HandleInertiaRequests extends Middleware
         $totalQuantity = $cartService->getTotalQuantity();
         $totalPrice = $cartService->getTotalPrice();
         $cartItems = $cartService->getCartItems();
+        $departments = Department::published()
+            ->with('categories')
+            ->get();
 
         return [
             ...parent::share($request),
+            'appName' => config('app.name'),
             'csrf_token' => csrf_token(),
             'auth' => [
                 'user' => $request->user(),
@@ -46,10 +52,16 @@ class HandleInertiaRequests extends Middleware
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
-            'success' => session('success'),
+            'success' => [
+                'message' => session('success'),
+                'time' => microtime(true)
+            ],
+            'error' => session('error'),
             'totalQuantity' => $totalQuantity,
             'totalPrice' => $totalPrice,
-            'miniCartItems' => $cartItems
+            'miniCartItems' => $cartItems,
+            'departments' => DepartmentResource::collection($departments)->collection->toArray(),
+            'keyword' => $request->query('keyword')
         ];
     }
 }

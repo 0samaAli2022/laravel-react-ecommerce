@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\VariationTypeOption;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -189,7 +190,7 @@ class CartService
 
         if ($cartItem) {
             $cartItem->update([
-                'quantity' => $quantity,
+                'quantity' => DB::raw('quantity + ' . $quantity),
             ]);
         } else {
             CartItem::create([
@@ -210,8 +211,8 @@ class CartService
         $itemKey = $productId . '_' . json_encode($optionIds);
 
         if (isset($cartItems[$itemKey])) {
-            $cartItems[$itemKey]['quantity'] = $quantity;
-            $cartItems[$itemKey]['price'] = $price;
+            $cartItems[$itemKey]['quantity'] += $quantity;
+            $cartItems[$itemKey]['price'] = $price; // Keep the latest price
         } else {
             $cartItems[$itemKey] = [
                 'id' => Str::uuid(),

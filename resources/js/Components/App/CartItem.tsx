@@ -12,7 +12,7 @@ function CartItem({ item }: { item: CartItemType }) {
 
   const [error, setError] = React.useState('');
   const onDeleteClick = () => {
-    deleteForm.post(route('cart.destroy', item.product_id), {
+    deleteForm.delete(route('cart.destroy', item.product_id), {
       preserveScroll: true
     });
   };
@@ -23,7 +23,7 @@ function CartItem({ item }: { item: CartItemType }) {
       e.target.value = item.quantity.toString(); // Reset to current quantity if invalid
       return;
     }
-    
+
     setError('');
     router.put(route('cart.update', item.product_id), {
       quantity: newQuantity,

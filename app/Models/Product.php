@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class Product extends Model implements HasMedia
@@ -78,5 +79,34 @@ class Product extends Model implements HasMedia
             }
         }
         return $this->price;
+    }
+
+    public function getImages(): MediaCollection
+    {
+        foreach ($this->variationTypes as $variationType) {
+            foreach ($variationType->options as $option) {
+                $images = $option->getMedia('images');
+                if ($images->count() > 0) {
+                    return $images;
+                }
+            }
+        }
+        return $this->getMedia('images');
+    }
+
+    public function getImagesForOptions(array $optionIds = null)
+    {
+        if ($optionIds) {
+            $optionIds = array_values($optionIds);
+            sort($optionIds);
+            $options = VariationTypeOption::whereIn('id', $optionIds)->get();
+            foreach ($options as $option) {
+                $image = $option->getFirstMediaUrl('images', 'small');
+                if ($image) {
+                    return $image;
+                }
+            }
+        }
+        return $this->getFirstMediaUrl('images', 'small');
     }
 }

@@ -13,7 +13,9 @@ use App\Models\Product;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Pages\SubNavigationPosition;
@@ -99,7 +101,13 @@ class ProductResource extends Resource
                 Select::make('status')
                     ->options(ProductStatusEnum::labels())
                     ->default(ProductStatusEnum::Draft->value)
-                    ->required()
+                    ->required(),
+                Section::make('SEO')
+                    ->collapsible()
+                    ->schema([
+                        TextInput::make('meta_title'),
+                        TextArea::make('meta_description'),
+                    ])
             ]);
     }
 

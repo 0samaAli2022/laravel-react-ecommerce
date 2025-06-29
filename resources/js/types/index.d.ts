@@ -32,6 +32,8 @@ export type Product = {
   id: number;
   title: string;
   slug: string;
+  meta_title: string;
+  meta_description: string;
   price: number;
   quantity: number;
   image: string;
@@ -45,6 +47,7 @@ export type Product = {
   department: {
     id: number;
     name: string;
+    slug: string;
   };
   variationTypes: VariationType[],
   variations: Array<{
@@ -74,6 +77,47 @@ export type GroupedCartItems = {
   totalPrice: number;
 }
 
+export type Category = {
+  id: number;
+  name: string;
+}
+
+export type Department = {
+  id: number;
+  name: string;
+  slug: string;
+  meta_title: string;
+  meta_description: string;
+  categories: Category[]
+}
+
+export type Order = {
+  id: number;
+  total_price: number;
+  user: User;
+  vendor_user: User;
+  status: string;
+  items: OrderItem[];
+  online_payment_commission: number;
+  website_commission: number;
+  vendor_subtotal: number;
+  payment_intent: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type OrderItem = {
+  id: number;
+  order_id: number;
+  product_id: number;
+  product: Product;
+  price: number;
+  quantity: number;
+  variation_type_option_ids: number[];
+  created_at: string;
+  updated_at: string;
+}
+
 export type PaginationProps<T> = {
   data: Array<T>;
 }
@@ -81,12 +125,20 @@ export type PaginationProps<T> = {
 export type PageProps<
   T extends Record<string, unknown> = Record<string, unknown>,
 > = T & {
+  appName: string;
   csrf_token: string;
+  error: string;
+  success: {
+    message: string;
+    time: number;
+  };
   auth: {
     user: User;
   };
   ziggy: Config & { location: string };
   totalQuantity: number;
   totalPrice: number;
-  miniCartItems: CartItem[]
+  miniCartItems: CartItem[],
+  departments: Department[],
+  keyword: string,
 };

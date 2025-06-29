@@ -1,6 +1,6 @@
 import { GroupedCartItems, PageProps } from '@/types';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import CurrencyFormatter from '@/Components/Core/CurrencyFormatter';
 import PrimaryButton from '@/Components/Core/PrimaryButton';
 import { CreditCardIcon } from '@heroicons/react/24/outline';
@@ -18,6 +18,15 @@ function Index(
     totalQuantity: number;
     totalPrice: number
   }>) {
+
+  const handleCheckout = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.post(route('cart.checkout'), {
+      preserveScroll: true,
+      preserveState: true
+    });
+  };
+
   return (
     <AuthenticatedLayout>
       <Head title={'Your Cart'} />
@@ -29,7 +38,6 @@ function Index(
             </h2>
             <div className={'my-4'}>
               {Object.keys(cartItems).length === 0 && (
-                // TODO : Add empty cart component
                 <div className={'py-2 text-gray-500 text-center'}>
                   Your cart is empty
                 </div>
@@ -66,13 +74,13 @@ function Index(
           <div className="card-body">
             Subtotal ({totalQuantity} items): &nbsp;
             <CurrencyFormatter amount={totalPrice} />
-            <form action={route('cart.checkout')} method={'post'}>
-              <input type={'hidden'} name={'csrf_token'} value={csrf_token} />
-              <PrimaryButton className={'rounded-full'}>
-                <CreditCardIcon className={'size-6'} />
-                Proceed to Checkout
-              </PrimaryButton>
-            </form>
+            <PrimaryButton
+              onClick={handleCheckout}
+              className={'rounded-full'}
+            >
+              <CreditCardIcon className={'size-6'} />
+              Proceed to Checkout
+            </PrimaryButton>
           </div>
         </div>
       </div>

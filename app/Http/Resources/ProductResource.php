@@ -9,6 +9,7 @@ class ProductResource extends JsonResource
 {
     public static $wrap = false;
 
+
     /**
      * Transform the resource into an array.
      *
@@ -16,15 +17,36 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+
+        $options = $request->input('options') ?: [];
+        if ($options) {
+            $images = $this->getImagesForOptions($options);
+        } else {
+            $images = $this->getImages();
+        }
+
+        // Ensure $images is always a collection
+        $images = is_string($images) ? collect([$images]) : $images;
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'slug' => $this->slug,
             'description' => $this->description,
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
             'price' => $this->price,
             'quantity' => $this->quantity,
             'image' => $this->getFirstMediaUrl('images'),
-            'images' => $this->getMedia('images')->map(function ($image) {
+            'images' => $images->map(function ($image) {
+                if (is_string($image)) {
+                    return [
+                        'id' => null,
+                        'thumb' => $image,
+                        'small' => $image,
+                        'large' => $image,
+                    ];
+                }
                 return [
                     'id' => $image->id,
                     'thumb' => $image->getUrl('thumb'),
@@ -39,6 +61,7 @@ class ProductResource extends JsonResource
             'department' => [
                 'id' => $this->department->id,
                 'name' => $this->department->name,
+                'slug' => $this->department->slug
             ],
             'variationTypes' => $this->variationTypes->map(function ($variationType) {
                 return [
