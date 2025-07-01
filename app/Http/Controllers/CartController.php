@@ -92,17 +92,17 @@ class CartController extends Controller
         $vendorId = $request->input('vendor_id');
 
         $allCartItems = $cartService->getCartItemsGrouped();
-        $existingOrders = Order::where('user_id', $request->user()->id)
+        $existingOrders = Order::with('items')
+            ->where('user_id', $request->user()->id)
             ->where('status', OrderStatusEnum::Draft)
             ->get();
-
-
         if ($existingOrders->count() > 0) {
-            return redirect()->route('checkout.payment', [
-                'orderIds' => $existingOrders->pluck('id')->toArray(),
-            ]);
+            $existingOrders->each->delete();
         }
+
+
         DB::beginTransaction();
+
         try {
             $checkoutCartItems = $allCartItems;
             if ($vendorId) {
@@ -121,16 +121,17 @@ class CartController extends Controller
 
                 $orders[] = $order;
                 foreach ($cartItems as $cartItem) {
+                    $description = collect($cartItem['options'])
+                        ->map(fn($option) => "{$option['type']['name']}: {$option['name']}")
+                        ->implode(', ');
                     OrderItem::create([
                         'order_id' => $order->id,
                         'product_id' => $cartItem['product_id'],
                         'quantity' => $cartItem['quantity'],
                         'price' => $cartItem['price'],
                         'variation_type_option_ids' => $cartItem['option_ids'],
+                        'description' => $description
                     ]);
-                    $description = collect($cartItem['options'])
-                        ->map(fn($option) => "{$option['type']['name']}: {$option['name']}")
-                        ->implode(', ');
                 }
             }
             foreach ($orders as $order) {

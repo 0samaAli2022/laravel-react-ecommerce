@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Order } from '@/types';
 import { router } from '@inertiajs/react';
+import CurrencyFormatter from '@/Components/Core/CurrencyFormatter';
 
 export default function PaymentPage({ orders }: { orders: Order[] }) {
   const [selectedMethod, setSelectedMethod] = useState('cod');
@@ -39,32 +40,50 @@ export default function PaymentPage({ orders }: { orders: Order[] }) {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-gray-50 p-4 rounded-xl shadow-sm">
-            <h2 className="font-semibold text-gray-700 mb-4">Order Summary</h2>
+          <div className="bg-gray-50 p-6 rounded-2xl shadow-md">
+            <h2 className="text-lg font-semibold text-gray-800 mb-6">Order Summary</h2>
 
             {orders.map((order) => (
-              <div key={order.id} className="mb-6">
-                <h3 className="font-medium text-gray-600 mb-2">
-                  Order #{order.id}
-                </h3>
+              <div key={order.id} className="mb-8 border border-gray-200 rounded-xl p-4 bg-white">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-base font-medium text-gray-700">
+                    Order #{order.id}
+                  </h3>
+                  <div className="text-sm text-gray-600">
+                    Seller: {order.vendorUser.store_name}
+                  </div>
+                </div>
 
-                <ul className="space-y-2 text-sm text-gray-700">
+                <div className="divide-y divide-gray-100">
                   {order.items.map((item) => (
-                    <li key={item.id} className="flex justify-between">
+                    <div key={item.id} className="py-3 flex justify-between items-start">
                       <div>
-                        {item.product.title} × {item.quantity}
+                        <div className="text-sm font-medium text-gray-800">
+                          {item.product.title} × {item.quantity}
+                        </div>
+                        {item.description && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {item.description}
+                          </div>
+                        )}
                       </div>
-                      <div className="font-medium">${(item.price * item.quantity).toFixed(2)}</div>
-                    </li>
-                  ))}
-                </ul>
 
-                <div className="mt-2 text-right font-bold text-gray-800">
-                  Total: ${order.total_price}
+                      <div className="text-sm font-semibold text-gray-700 whitespace-nowrap">
+                        <CurrencyFormatter amount={item.price * item.quantity} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-gray-100 text-right">
+        <span className="text-sm font-bold text-gray-900">
+          Total: ${order.total_price}
+        </span>
                 </div>
               </div>
             ))}
           </div>
+
 
           {/* Submit */}
           <button

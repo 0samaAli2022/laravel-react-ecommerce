@@ -4,7 +4,6 @@ import { usePage } from '@inertiajs/react';
 
 export default function AuthenticatedLayout(
   {
-    header,
     children
   }: PropsWithChildren<{ header?: ReactNode }>) {
 

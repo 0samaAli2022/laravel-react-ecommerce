@@ -76,11 +76,13 @@ function MiniCartDropdown() {
               </div>
             ))}
           </div>
-
           <span className="text-lg">Subtotal: <CurrencyFormatter amount={totalPrice} />
         </span>
           <div className="card-actions">
-            <Link href={route('cart.index')}
+            <Link href={route('cart.index', {
+              preserveScroll: true,
+              preserveState: true
+            })}
                   className="btn btn-primary btn-block">
               View cart
             </Link>

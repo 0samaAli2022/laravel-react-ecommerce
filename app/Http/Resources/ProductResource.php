@@ -9,7 +9,6 @@ class ProductResource extends JsonResource
 {
     public static $wrap = false;
 
-
     /**
      * Transform the resource into an array.
      *
@@ -20,7 +19,7 @@ class ProductResource extends JsonResource
 
         $options = $request->input('options') ?: [];
         if ($options) {
-            $images = $this->getImagesForOptions($options);
+            $images = $this->getImageForOptions($options);
         } else {
             $images = $this->getImages();
         }

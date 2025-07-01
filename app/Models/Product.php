@@ -40,6 +40,7 @@ class Product extends Model implements HasMedia
     public function scopeForWebsite(Builder $query): Builder
     {
         return $query->published();
+
     }
 
     public function user(): BelongsTo
@@ -94,7 +95,7 @@ class Product extends Model implements HasMedia
         return $this->getMedia('images');
     }
 
-    public function getImagesForOptions(array $optionIds = null)
+    public function getImageForOptions(array $optionIds = null)
     {
         if ($optionIds) {
             $optionIds = array_values($optionIds);
@@ -109,4 +110,5 @@ class Product extends Model implements HasMedia
         }
         return $this->getFirstMediaUrl('images', 'small');
     }
+
 }

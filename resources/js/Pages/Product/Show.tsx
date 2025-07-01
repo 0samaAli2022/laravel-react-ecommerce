@@ -30,6 +30,8 @@ function Show(
 
   // Parse URL parameters for options
   const urlParams = useMemo(() => {
+    if (typeof window === 'undefined') return {}; // SSR-safe: return empty object on server
+
     const params = new URLSearchParams(window.location.search);
     const options: Record<number, number> = {};
 
@@ -45,7 +47,8 @@ function Show(
     });
 
     return options;
-  }, [url]);
+  }, []);
+
 
   const images = useMemo(() => {
     for (let typeId in selectedOptions) {
@@ -78,7 +81,9 @@ function Show(
   }, [product, selectedOptions]);
 
   useEffect(() => {
-    // Use URL parameters if available, otherwise fall back to props
+    // Make sure we’re running in the browser (for SSR safety)
+    if (typeof window === 'undefined') return;
+
     const optionsToUse = Object.keys(urlParams).length > 0 ? urlParams : variationOptions;
 
     for (let type of product.variationTypes) {
@@ -88,11 +93,9 @@ function Show(
         if (option) {
           chooseOption(type.id, option, false);
         } else if (type.options.length > 0) {
-          // If the option from URL doesn't exist, select the first available option
           chooseOption(type.id, type.options[0], false);
         }
       } else if (type.options.length > 0) {
-        // If no option is selected for this type, select the first one
         chooseOption(type.id, type.options[0], false);
       }
     }
@@ -109,13 +112,12 @@ function Show(
         [typeId]: option
       };
 
-      if (updateRouter) {
+      if (typeof window !== 'undefined' && updateRouter) {
         const params = new URLSearchParams();
         Object.entries(newOptions).forEach(([tId, opt]) => {
           params.set(`options[${tId}]`, opt.id.toString());
         });
 
-        // Use pushState to update URL without page reload
         const newUrl = `${window.location.pathname}?${params.toString()}`;
         window.history.pushState({}, '', newUrl);
       }

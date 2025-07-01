@@ -94,28 +94,32 @@ export type Department = {
 export type Order = {
   id: number;
   total_price: number;
-  user: User;
-  vendor_user: User;
   status: string;
-  items: OrderItem[];
-  online_payment_commission: number;
-  website_commission: number;
-  vendor_subtotal: number;
-  payment_intent: string;
   created_at: string;
-  updated_at: string;
+  user: User;
+  vendorUser: {
+    id: number;
+    name: string;
+    email: string;
+    store_name: string;
+    store_address: string;
+  };
+  items: OrderItem[];
 }
 
 export type OrderItem = {
   id: number;
-  order_id: number;
-  product_id: number;
-  product: Product;
+  product: {
+    id: number;
+    title: string;
+    slug: string;
+    description: string;
+    image: string;
+  };
   price: number;
   quantity: number;
   variation_type_option_ids: number[];
-  created_at: string;
-  updated_at: string;
+  description: string;
 }
 
 export type PaginationProps<T> = {

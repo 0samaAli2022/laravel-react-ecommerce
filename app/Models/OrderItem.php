@@ -19,6 +19,7 @@ class OrderItem extends Model
         'quantity',
         'price',
         'variation_type_option_ids',
+        'description',
     ];
 
     public function order(): BelongsTo

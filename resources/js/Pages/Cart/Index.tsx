@@ -21,6 +21,7 @@ function Index(
 
   const handleCheckout = (e: React.FormEvent) => {
     e.preventDefault();
+
     router.post(route('cart.checkout'), {
       preserveScroll: true,
       preserveState: true
@@ -76,6 +77,7 @@ function Index(
             <CurrencyFormatter amount={totalPrice} />
             <PrimaryButton
               onClick={handleCheckout}
+              disabled={Object.keys(cartItems).length === 0}
               className={'rounded-full'}
             >
               <CreditCardIcon className={'size-6'} />

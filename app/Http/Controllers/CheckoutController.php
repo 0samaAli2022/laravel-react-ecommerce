@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatusEnum;
+use App\Http\Resources\OrderViewResource;
 use App\Models\CartItem;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -13,24 +14,29 @@ class CheckoutController extends Controller
     public function payment(Request $request): \Inertia\Response
     {
         $orderIds = $request->query('orderIds', []);
-        $orders = Order::with('items.product')->whereIn('id', $orderIds)->get();
+        $orders = Order::with('items.product')
+            ->whereIn('id', $orderIds)
+            ->where('status', OrderStatusEnum::Draft)
+            ->where('user_id', $request->user()->id)
+            ->get();
 
         return Inertia::render('Payment/Payment',
             [
-                'orders' => $orders,
+                'orders' => OrderViewResource::collection($orders)->collection->toArray(),
             ]
         );
     }
 
     public function finishPayment(Request $request): \Inertia\Response
     {
-        $orders = Order::with('items.product')->where('status', OrderStatusEnum::Draft)->get();
+        $orders = Order::with('items.product')
+            ->where('status', OrderStatusEnum::Draft)
+            ->get();
         $totalAmount = $orders->sum('total_price');
         $productsToDeletedFromCart = [];
         try {
             foreach ($orders as $order) {
-                $vendorShare = $order->total_price / $totalAmount;
-                $order->website_commission = $order->total_price / 100 * 10;
+                $order->website_commission = $order->total_price / 100 * config('app.platform_fee_pct');
                 $order->vendor_subtotal = $order->total_price - $order->website_commission;
                 $order->status = OrderStatusEnum::Paid;
                 $order->save();
@@ -46,7 +52,7 @@ class CheckoutController extends Controller
 
                     if ($options) {
                         sort($options);
-                        $variation = $product->variations()
+                        $variation = $product->variations
                             ->where('variation_type_option_ids', $options)
                             ->first();
                         if ($variation && $variation->quantity != null) {
@@ -64,7 +70,6 @@ class CheckoutController extends Controller
                     ->whereIn('product_id', $productsToDeletedFromCart)
                     ->where('saved_for_later', false)
                     ->delete();
-
             }
             return Inertia::render('Payment/Success', [
                 'orderNumber' => $order->id, // or order number if you use one

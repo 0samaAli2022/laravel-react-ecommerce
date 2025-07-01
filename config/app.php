@@ -124,5 +124,6 @@ return [
     ],
 
     'currency' => env('APP_CURRENCY', 'USD'),
+    'platform_fee_pct' => env('APP_PLATFORM_FEE_PCT', 10),
 
 ];
